@@ -6,8 +6,8 @@ public class Ball {
 
     private double x;
     private double y;
-    private double r;
-    private int speed;
+    private final double r;
+    private final int speed;
     private double directionFacing;
 
     private double dx;
@@ -54,14 +54,6 @@ public class Ball {
         }
     }
 
-    public void setSpeed(int speed) {
-        this.dx /= this.speed;
-        this.dy /= this.speed;
-        this.speed = speed;
-        this.dx *= speed;
-        this.dy *= speed;
-    }
-
     public boolean isFireball() {
         return isFireball;
     }
@@ -78,38 +70,14 @@ public class Ball {
         return x;
     }
 
-    public void setX(double x) {
-        this.x = x;
-    }
-
     public double getY() {
         return y;
-    }
-
-    public void setY(double y) {
-        this.y = y;
     }
 
     public double getR() {
         return r;
     }
-
-    public void setR(double r) {
-        this.r = r;
-    }
-
-    public int getSpeed() {
-        return speed;
-    }
-
-    public double getDirectionFacing() {
-        return directionFacing;
-    }
-
-    public void setDirectionFacing(double directionFacing) {
-        this.directionFacing = directionFacing;
-    }
-
+    
     public void draw(Graphics2D g) {
         if(isFireball) {
             g.setPaint(new GradientPaint((int) (this.x - this.r), (int) (this.y - this.r), Color.WHITE, (int) this.x, (int) this.y, new Color(255, 64, 0)));

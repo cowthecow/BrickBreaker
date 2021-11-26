@@ -4,10 +4,10 @@ import java.awt.*;
 
 public class Brick {
 
-    private int x;
-    private int y;
-    private int width;
-    private int height;
+    private final int x;
+    private final int y;
+    private final int width;
+    private final int height;
     private int health;
     private Color color;
 
@@ -27,43 +27,19 @@ public class Brick {
     public int getX() {
         return x;
     }
-
-    public void setX(int x) {
-        this.x = x;
-    }
-
+    
     public int getY() {
         return y;
     }
-
-    public void setY(int y) {
-        this.y = y;
-    }
-
+    
     public int getWidth() {
         return width;
     }
-
-    public void setWidth(int width) {
-        this.width = width;
-    }
-
+    
     public int getHeight() {
         return height;
     }
-
-    public void setHeight(int height) {
-        this.height = height;
-    }
-
-    public Color getColor() {
-        return color;
-    }
-
-    public void setColor(Color color) {
-        this.color = color;
-    }
-
+    
     public boolean shouldDelete(){return isDead;}
 
     public void crack() {
@@ -81,7 +57,7 @@ public class Brick {
 
         g.setPaint(null);
         g.setColor(new Color(0,0,0,64));
-        //Draw cracks on brick
+
         for(int i = 0; i < this.maxHealth-this.health; i++) {
             g.fillRoundRect(x-width/2, y-height/2,width,height, this.width/10,this.height/10);
         }
