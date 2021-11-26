@@ -121,25 +121,6 @@ public class GamePanel extends JPanel implements Runnable {
         }
     }
 
-    private void removeBricks() {
-        ArrayList<Brick> deleted = new ArrayList<>();
-        for (Brick brick : bricks) {
-            if (brick.shouldDelete())
-                deleted.add(brick);
-        }
-        bricks.removeAll(deleted);
-    }
-
-    private void removeSmokeEffects() {
-        ArrayList<SmokeEffect> deleted = new ArrayList<>();
-        for (SmokeEffect smoke : smokeEffects) {
-            smoke.update();
-            if (smoke.shouldDeleteObject())
-                deleted.add(smoke);
-        }
-        smokeEffects.removeAll(deleted);
-    }
-
     boolean circleRect(double cx, double cy, double radius, double rx, double ry, double rw, double rh) {
 
         // temporary variables to set edges for testing
@@ -162,6 +143,26 @@ public class GamePanel extends JPanel implements Runnable {
             return true;
         }
         return false;
+    }
+
+    private void updateBricks() {
+        ArrayList<Brick> deleted = new ArrayList<>();
+        for (Brick brick : bricks) {
+            //brick.update()
+            if (brick.lifeOver())
+                deleted.add(brick);
+        }
+        bricks.removeAll(deleted);
+    }
+
+    private void updateSmokeEffects() {
+        ArrayList<SmokeEffect> deleted = new ArrayList<>();
+        for (SmokeEffect smoke : smokeEffects) {
+            smoke.update();
+            if (smoke.lifeOver())
+                deleted.add(smoke);
+        }
+        smokeEffects.removeAll(deleted);
     }
 
     private void ballPaddleCollision() {
@@ -194,8 +195,8 @@ public class GamePanel extends JPanel implements Runnable {
         ballPaddleCollision();
         ballBrickCollision();
 
-        removeBricks();
-        removeSmokeEffects();
+        updateBricks();
+        updateSmokeEffects();
 
         paddle.update();
         ball.update();

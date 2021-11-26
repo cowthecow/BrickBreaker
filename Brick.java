@@ -2,7 +2,7 @@ package com.laserinfinite.java;
 
 import java.awt.*;
 
-public class Brick {
+public class Brick implements Entity {
 
     private final int x;
     private final int y;
@@ -27,39 +27,44 @@ public class Brick {
     public int getX() {
         return x;
     }
-    
+
     public int getY() {
         return y;
     }
-    
+
     public int getWidth() {
         return width;
     }
-    
+
     public int getHeight() {
         return height;
     }
-    
-    public boolean shouldDelete(){return isDead;}
 
     public void crack() {
-        this.health --;
-        if(this.health <= 0) isDead = true;
+        this.health--;
+        if (this.health <= 0) isDead = true;
     }
 
+    @Override
+    public boolean lifeOver() {
+        return isDead;
+    }
+
+    @Override
     public void update() {
 
     }
 
+    @Override
     public void draw(Graphics2D g) {
-        g.setPaint(new GradientPaint(this.x, this.y-10, this.color, this.x, this.y+10, this.color.darker().darker()));
-        g.fillRoundRect(x-width/2, y-height/2,width,height, this.width/10,this.height/10);
+        g.setPaint(new GradientPaint(this.x, this.y - 10, this.color, this.x, this.y + 10, this.color.darker().darker()));
+        g.fillRoundRect(x - width / 2, y - height / 2, width, height, this.width / 10, this.height / 10);
 
         g.setPaint(null);
-        g.setColor(new Color(0,0,0,64));
+        g.setColor(new Color(0, 0, 0, 64));
 
-        for(int i = 0; i < this.maxHealth-this.health; i++) {
-            g.fillRoundRect(x-width/2, y-height/2,width,height, this.width/10,this.height/10);
+        for (int i = 0; i < this.maxHealth - this.health; i++) {
+            g.fillRoundRect(x - width / 2, y - height / 2, width, height, this.width / 10, this.height / 10);
         }
     }
 }

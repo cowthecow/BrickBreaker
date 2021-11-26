@@ -2,7 +2,7 @@ package com.laserinfinite.java;
 
 import java.awt.*;
 
-public class Ball {
+public class Ball implements Entity {
 
     private double x;
     private double y;
@@ -28,32 +28,6 @@ public class Ball {
         this.dy = Math.sin(directionFacing + (Math.PI / 2)) * speed;
     }
 
-    public void updateLocation() {
-        this.x += dx;
-        this.y += dy;
-    }
-
-    public void update() {
-        this.x += dx;
-        this.y += dy;
-
-        if (x - r <= 0 || x + r >= GamePanel.WIDTH) {
-            dx = -dx;
-        }
-        if (y - r <= 0) {
-            dy = -dy;
-        }
-        if (y + r >= GamePanel.HEIGHT) {
-            dy = -dy;
-        }
-        if(isFireball) {
-            if ((System.nanoTime() - lastSmokeRelease) / 1000000 > 1) {
-                GamePanel.smokeEffects.add(new SmokeEffect((int) this.x, (int) this.y, (int) (Math.random() * 5) + 5, 1, 0.25, new Color(32, 32, 32)));
-                lastSmokeRelease = System.nanoTime();
-            }
-        }
-    }
-
     public boolean isFireball() {
         return isFireball;
     }
@@ -77,11 +51,44 @@ public class Ball {
     public double getR() {
         return r;
     }
-    
+
+    public void updateLocation() {
+        this.x += dx;
+        this.y += dy;
+    }
+
+    @Override
+    public boolean lifeOver() {
+        return false;
+    }
+
+    @Override
+    public void update() {
+        this.x += dx;
+        this.y += dy;
+
+        if (x - r <= 0 || x + r >= GamePanel.WIDTH) {
+            dx = -dx;
+        }
+        if (y - r <= 0) {
+            dy = -dy;
+        }
+        if (y + r >= GamePanel.HEIGHT) {
+            dy = -dy;
+        }
+        if (isFireball) {
+            if ((System.nanoTime() - lastSmokeRelease) / 1000000 > 1) {
+                GamePanel.smokeEffects.add(new SmokeEffect((int) this.x, (int) this.y, (int) (Math.random() * 5) + 5, 1, 0.25, new Color(32, 32, 32)));
+                lastSmokeRelease = System.nanoTime();
+            }
+        }
+    }
+
+    @Override
     public void draw(Graphics2D g) {
-        if(isFireball) {
+        if (isFireball) {
             g.setPaint(new GradientPaint((int) (this.x - this.r), (int) (this.y - this.r), Color.WHITE, (int) this.x, (int) this.y, new Color(255, 64, 0)));
-        }else {
+        } else {
             g.setPaint(new GradientPaint((int) (this.x - this.r), (int) (this.y - this.r), Color.WHITE, (int) this.x, (int) this.y, new Color(0, 128, 128)));
         }
         g.fillOval((int) (this.x - this.r), (int) (this.y - this.r), (int) (this.r * 2), (int) (this.r * 2));

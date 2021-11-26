@@ -2,7 +2,7 @@ package com.laserinfinite.java;
 
 import java.awt.*;
 
-public class SmokeEffect {
+public class SmokeEffect implements Entity {
 
     private final int x;
     private final int y;
@@ -19,8 +19,9 @@ public class SmokeEffect {
         this.fadeRate = fadeRate;
         this.color = color;
     }
-    
-    public boolean shouldDeleteObject() {
+
+    @Override
+    public boolean lifeOver() {
         return this.r <= this.minR;
     }
 
@@ -29,8 +30,8 @@ public class SmokeEffect {
     }
 
     public void draw(Graphics2D g) {
-        Color currentColor = new Color(this.color.getRed(),this.color.getGreen(),this.color.getBlue(), (int)(255-((minR/r)*255)));
+        Color currentColor = new Color(this.color.getRed(), this.color.getGreen(), this.color.getBlue(), (int) (255 - ((minR / r) * 255)));
         g.setColor(currentColor);
-        g.fillOval(this.x-(int)this.r, this.y-(int)this.r, (int)this.r*2,(int)this.r*2);
+        g.fillOval(this.x - (int) this.r, this.y - (int) this.r, (int) this.r * 2, (int) this.r * 2);
     }
 }
