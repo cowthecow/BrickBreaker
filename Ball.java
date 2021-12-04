@@ -7,25 +7,36 @@ public class Ball implements Entity {
     private double x;
     private double y;
     private final double r;
-    private final int speed;
+    private int speed;
     private double directionFacing;
 
     private double dx;
     private double dy;
 
     private double lastSmokeRelease = System.nanoTime();
-
-    private boolean isFireball = true;
+    private boolean isFireball = false;
+    private boolean lifeover = false;
 
     public Ball() {
         this.x = GamePanel.WIDTH / 2.0;
-        this.y = GamePanel.HEIGHT / 2.0;
+        this.y = 475;
         this.r = 10;
-        this.speed = 6;
-        this.directionFacing = Math.random() * Math.PI * 2;
+        this.speed = 5;
+        this.directionFacing = Math.PI;
 
-        this.dx = Math.cos(directionFacing + (Math.PI / 2)) * speed;
-        this.dy = Math.sin(directionFacing + (Math.PI / 2)) * speed;
+        this.dx = Math.cos((directionFacing)) * speed;
+        this.dy = Math.sin((directionFacing)) * speed;
+
+
+
+        //turnToFireball();
+    }
+
+    public void turnToFireball() {
+        isFireball = true;
+        this.speed *= 3.0/2.0;
+        this.dx = Math.cos((directionFacing)) * speed;
+        this.dy = Math.sin((directionFacing)) * speed;
     }
 
     public boolean isFireball() {
@@ -40,6 +51,10 @@ public class Ball implements Entity {
         this.dy = -dy;
     }
 
+    public void setX(double x) {this.dx = x;}
+
+    public void setY(double y) {this.dy = y;}
+
     public double getX() {
         return x;
     }
@@ -52,6 +67,10 @@ public class Ball implements Entity {
         return r;
     }
 
+    public double getDx() {return dx;}
+
+    public double getDy() {return dy;}
+
     public void updateLocation() {
         this.x += dx;
         this.y += dy;
@@ -59,13 +78,33 @@ public class Ball implements Entity {
 
     @Override
     public boolean lifeOver() {
-        return false;
+        return this.lifeover;
+    }
+
+
+    public static double slopeToAngle(double dx, double dy) {
+        double angle = (Math.atan2(dy, dx));
+        if (angle < 0) angle += Math.PI*2;
+        return Math.PI*2-angle;
+    }
+
+    public static double[] angleToSlope(double angle) {
+        return new double[] {Math.cos(Math.PI*2-angle),Math.sin(Math.PI*2-angle)};
     }
 
     @Override
     public void update() {
-        this.x += dx;
-        this.y += dy;
+        if(this.y > 575 && !isFireball) turnToFireball();
+        if(this.y > 575 && isFireball) this.lifeover = true;
+
+        this.directionFacing = slopeToAngle(this.dx,this.dy);
+
+        //System.out.println("Le ball shall go to le angle " + (360-Math.toDegrees(directionFacing)));
+        //System.out.println(Math.PI*2-directionFacing);
+        this.x -= angleToSlope((directionFacing))[0] * speed;
+        this.y -= angleToSlope((directionFacing))[1] * speed;
+
+        GamePanel.ballPaddleCollision();
 
         if (x - r <= 0 || x + r >= GamePanel.WIDTH) {
             dx = -dx;
@@ -76,6 +115,7 @@ public class Ball implements Entity {
         if (y + r >= GamePanel.HEIGHT) {
             dy = -dy;
         }
+
         if (isFireball) {
             if ((System.nanoTime() - lastSmokeRelease) / 1000000 > 1) {
                 GamePanel.smokeEffects.add(new SmokeEffect((int) this.x, (int) this.y, (int) (Math.random() * 5) + 5, 1, 0.25, new Color(32, 32, 32)));
