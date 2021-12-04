@@ -36,7 +36,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
     public static boolean isWaiting = false;
     public static boolean gameOver = false;
-    public static int playerScore = 1000;
+    public static int playerScore = 0;
 
     public static long waitStartTime;
     public static long lastCollision = 0;
