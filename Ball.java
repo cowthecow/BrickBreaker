@@ -15,7 +15,7 @@ public class Ball implements Entity {
 
     private double lastSmokeRelease = System.nanoTime();
     private boolean isFireball = false;
-    private boolean lifeover = false;
+    private boolean lifeOver = false;
 
     public Ball(boolean isFireball) {
         this.x = 11;
@@ -28,19 +28,14 @@ public class Ball implements Entity {
         this.dy = Math.sin((directionFacing)) * speed;
 
 
-
-        if(isFireball) turnToFireball();
+        if (isFireball) turnToFireball();
     }
 
     public void turnToFireball() {
         isFireball = true;
-        this.speed *= 3.0/2.0;
+        this.speed *= 3.0 / 2.0;
         this.dx = Math.cos((directionFacing)) * speed;
         this.dy = Math.sin((directionFacing)) * speed;
-    }
-
-    public boolean isFireball() {
-        return isFireball;
     }
 
     public void reverseX() {
@@ -51,9 +46,13 @@ public class Ball implements Entity {
         this.dy = -dy;
     }
 
-    public void setX(double x) {this.dx = x;}
+    public void setX(double x) {
+        this.dx = x;
+    }
 
-    public void setY(double y) {this.dy = y;}
+    public void setY(double y) {
+        this.dy = y;
+    }
 
     public double getX() {
         return x;
@@ -67,40 +66,36 @@ public class Ball implements Entity {
         return r;
     }
 
-    public double getDx() {return dx;}
+    public double getDx() {
+        return dx;
+    }
 
-    public double getDy() {return dy;}
+    public double getDy() {
+        return dy;
+    }
 
-    public void updateLocation() {
-        this.x += dx;
-        this.y += dy;
+    public static double slopeToAngle(double dx, double dy) {
+        double angle = (Math.atan2(dy, dx));
+        if (angle < 0) angle += Math.PI * 2;
+        return Math.PI * 2 - angle;
+    }
+
+    public static double[] angleToSlope(double angle) {
+        return new double[]{Math.cos(Math.PI * 2 - angle), Math.sin(Math.PI * 2 - angle)};
     }
 
     @Override
     public boolean lifeOver() {
-        return this.lifeover;
-    }
-
-
-    public static double slopeToAngle(double dx, double dy) {
-        double angle = (Math.atan2(dy, dx));
-        if (angle < 0) angle += Math.PI*2;
-        return Math.PI*2-angle;
-    }
-
-    public static double[] angleToSlope(double angle) {
-        return new double[] {Math.cos(Math.PI*2-angle),Math.sin(Math.PI*2-angle)};
+        return this.lifeOver;
     }
 
     @Override
     public void update() {
-        if(this.y > 575 && !isFireball) turnToFireball();
-        if(this.y > 575 && isFireball) this.lifeover = true;
+        if (this.y > 675 && !isFireball) turnToFireball();
+        if (this.y > 675 && isFireball) this.lifeOver = true;
 
-        this.directionFacing = slopeToAngle(this.dx,this.dy);
+        this.directionFacing = slopeToAngle(this.dx, this.dy);
 
-        //System.out.println("Le ball shall go to le angle " + (360-Math.toDegrees(directionFacing)));
-        //System.out.println(Math.PI*2-directionFacing);
         this.x -= angleToSlope((directionFacing))[0] * speed;
         this.y -= angleToSlope((directionFacing))[1] * speed;
 
@@ -110,9 +105,6 @@ public class Ball implements Entity {
             dx = -dx;
         }
         if (y - r <= 0) {
-            dy = -dy;
-        }
-        if (y + r >= GamePanel.HEIGHT) {
             dy = -dy;
         }
 

@@ -9,7 +9,7 @@ public class Brick implements Entity {
     private final int width;
     private final int height;
     private int health;
-    private Color color;
+    private final Color color;
 
     private final int maxHealth;
     private boolean isDead = false;
@@ -40,15 +40,12 @@ public class Brick implements Entity {
         return height;
     }
 
-    public int getHealth() {return health;}
-
     public void crack() {
         this.health--;
         if (this.health <= 0) {
             isDead = true;
             GamePanel.addScore(this.maxHealth*1000.0/((System.nanoTime()-GamePanel.gameStartTime)/1000000000.0+3));
         }
-
     }
 
     @Override
@@ -62,7 +59,6 @@ public class Brick implements Entity {
             isDead = true;
             GamePanel.addScore(this.maxHealth*1000.0/((System.nanoTime()-GamePanel.gameStartTime)/1000000000.0+3));
         }
-
     }
 
     @Override

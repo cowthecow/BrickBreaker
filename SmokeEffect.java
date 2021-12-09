@@ -25,10 +25,12 @@ public class SmokeEffect implements Entity {
         return this.r <= this.minR;
     }
 
+    @Override
     public void update() {
         this.r -= fadeRate;
     }
 
+    @Override
     public void draw(Graphics2D g) {
         Color currentColor = new Color(this.color.getRed(), this.color.getGreen(), this.color.getBlue(), (int) (255 - ((minR / r) * 255)));
         g.setColor(currentColor);
