@@ -199,13 +199,12 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                 for (int i = -2; i <= 2; i++) {
                     if (i % 2 == 0) bricks.add(new Brick(sx + 20 * i, sy + 180, 20, 20, 4, new Color(192, 192, 128)));
                 }
-
-                for(int i = 0; i < 30; i++) {
-                    bricks.add(new Brick(40 * i+40, 340, 20, 20, 1, new Color(128, 128, 64)));
-                    bricks.add(new Brick(40 * i+20, 360, 20, 20, 1, new Color(128, 128, 64)));
-                }
-
             }
+            for(int i = 0; i < 30; i++) {
+                bricks.add(new Brick(40 * i+40, 340, 20, 20, 1, new Color(128, 128, 64)));
+                bricks.add(new Brick(40 * i+20, 360, 20, 20, 1, new Color(128, 128, 64)));
+            }
+
 
         }
 
