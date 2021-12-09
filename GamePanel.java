@@ -14,13 +14,10 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     public static int HEIGHT = 600;
 
     private Thread thread;
-    private boolean running;
 
     private BufferedImage image;
     private Graphics2D g;
 
-    private final int FPS = 155;
-    private double averageFPS;
     private int health = 5;
 
     private double paddleTurningAngle = 0;
@@ -31,8 +28,6 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     public static ArrayList<Paddle> rotors = new ArrayList<>();
 
     public static ArrayList<Ball> balls = new ArrayList<>();
-
-    public static long previousBallSpawn = 0;
 
     public static boolean isWaiting;
     public static boolean gameOver = false;
@@ -69,20 +64,18 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
     @Override
     public void run() {
-        running = true;
-
         image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
 
 
         long startTime;
         long URDTimeMillis;
         long waitTime;
-        long totalTime = 0;
 
         int frameCount = 0;
         int maxFrameCount = 155;
 
 
+        int FPS = 155;
         long targetTime = 1000 / FPS;
 
         g = (Graphics2D) image.getGraphics();
@@ -94,7 +87,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
 
         //GAME LOOP
-        while (running) {
+        while (true) {
             startTime = System.nanoTime();
 
             gameUpdate();
@@ -105,18 +98,17 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
             waitTime = targetTime - URDTimeMillis;
 
-            try {
-                Thread.sleep(waitTime);
-            } catch (Exception ignore) {
+            if(waitTime > 0) {
+                try {
+                    Thread.sleep(waitTime);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
-
-            totalTime += System.nanoTime() - startTime;
 
             frameCount++;
             if (frameCount == maxFrameCount) {
-                averageFPS = 1000 / ((totalTime / frameCount) / 1000000);
                 frameCount = 0;
-                totalTime = 0;
             }
 
         }
@@ -149,24 +141,19 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                     }
                 }
             }
-
         } else if (level + 1 == 3) {
             for (int i = 0; i < 3; i++) {
                 for (int j = 0; j < 7; j++) {
-
                     bricks.add(new Brick(j * 150 + 150, i * 100 + 55, 20, 20, 4, new Color(255, 255, 200)));
                     bricks.add(new Brick(j * 150 + 130, i * 100 + 35, 20, 20, 3, new Color(200, 255, 255)));
                     bricks.add(new Brick(j * 150 + 170, i * 100 + 35, 20, 20, 3, new Color(200, 255, 255)));
                     bricks.add(new Brick(j * 150 + 130, i * 100 + 75, 20, 20, 3, new Color(200, 255, 255)));
                     bricks.add(new Brick(j * 150 + 170, i * 100 + 75, 20, 20, 3, new Color(200, 255, 255)));
                 }
-
             }
-
-
-        } else if(level + 1 == 4) {
-            for(int x = 0; x < 3; x++) {
-                int sx = 300+x*300;
+        } else if (level + 1 == 4) {
+            for (int x = 0; x < 3; x++) {
+                int sx = 300 + x * 300;
                 int sy = 50;
                 for (int i = -2; i <= 2; i++)
                     bricks.add(new Brick(sx + 20 * i, sy, 20, 20, 4, new Color(192, 192, 128)));
@@ -200,12 +187,10 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                     if (i % 2 == 0) bricks.add(new Brick(sx + 20 * i, sy + 180, 20, 20, 4, new Color(192, 192, 128)));
                 }
             }
-            for(int i = 0; i < 30; i++) {
-                bricks.add(new Brick(40 * i+40, 340, 20, 20, 1, new Color(128, 128, 64)));
-                bricks.add(new Brick(40 * i+20, 360, 20, 20, 1, new Color(128, 128, 64)));
+            for (int i = 0; i < 30; i++) {
+                bricks.add(new Brick(40 * i + 40, 340, 20, 20, 1, new Color(128, 128, 64)));
+                bricks.add(new Brick(40 * i + 20, 360, 20, 20, 1, new Color(128, 128, 64)));
             }
-
-
         }
 
     }
@@ -221,18 +206,11 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
         if (unrotatedCircleX < rx)
             closestX = rx;
-        else if (unrotatedCircleX > rx + rw)
-            closestX = rx + rw;
-        else
-            closestX = unrotatedCircleX;
+        else closestX = Math.min(unrotatedCircleX, rx + rw);
 
         if (unrotatedCircleY < ry)
             closestY = ry;
-        else if (unrotatedCircleY > ry + rh)
-            closestY = ry + rh;
-        else
-            closestY = unrotatedCircleY;
-
+        else closestY = Math.min(unrotatedCircleY, ry + rh);
 
         double distance = findDistance(unrotatedCircleX, unrotatedCircleY, closestX, closestY);
 
@@ -254,7 +232,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                 deleted.add(brick);
             }
         }
-        if(deleted.size() > 0) System.out.println(deleted.size());
+        if (deleted.size() > 0) System.out.println(deleted.size());
         bricks.removeAll(deleted);
 
     }
@@ -270,13 +248,11 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     }
 
     private void updateBalls() {
-        boolean newBall = false;
         ArrayList<Ball> deleted = new ArrayList<>();
         for (Ball ball : balls) {
             ball.update();
             if (ball.lifeOver()) {
                 deleted.add(ball);
-                //Spawn a new ball
                 health--;
                 if (health <= 0) {
                     gameOver = true;
@@ -285,7 +261,6 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                 waitingForLevel = false;
                 isWaiting = true;
                 waitStartTime = System.nanoTime();
-
             }
         }
         balls.removeAll(deleted);
@@ -297,20 +272,15 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
             int reachY = (int) (paddle.getY() + Math.sin(Math.PI - paddle.getAngle() + Math.PI / 30) * 75);
 
             if ((circleRect(ball.getX(), ball.getY(), 3, reachX, reachY, 150, 15, paddle.getAngle()))) {
-                System.out.println("Ball has touched the paddle");
                 if ((System.nanoTime() - lastCollision) / 1000000 > 300) {
                     lastCollision = System.nanoTime();
-                    //System.out.println("A ball has hit the paddle. It was coming at an angle of " + Ball.slopeToAngle(ball.getDx(), ball.getDy()));
                     ball.reverseY();
-
 
                     double newBallAngle = Ball.slopeToAngle(ball.getDx(), ball.getDy()) + paddle.getAngle() * 2;
                     ball.setX(Ball.angleToSlope(newBallAngle)[0]);
                     ball.setY(Ball.angleToSlope(newBallAngle)[1]);
-                    //System.out.println("The ball has bounced off the paddle, which was tilted at an angle of " + paddle.getAngle() + ", at an angle of " + newBallAngle + ".");
                 }
             }
-
         }
     }
 
@@ -320,7 +290,6 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                 if (circleRect(ball.getX(), ball.getY(), ball.getR(), brick.getX() - (brick.getWidth() / 2.0), brick.getY() - (brick.getWidth() / 2.0), brick.getWidth(), brick.getHeight(), 0)) {
                     if (Math.abs(brick.getX() - ball.getX()) < brick.getWidth() / 2.0) {
                         ball.reverseY();
-
                     } else {
                         ball.reverseX();
                     }
@@ -337,10 +306,9 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
             paddle.update();
 
             if (!isWaiting) {
-
-                if(lowerFirestorm) {
-                    firestormLevel-= 1f;
-                    if(firestormLevel < 0) {
+                if (lowerFirestorm) {
+                    firestormLevel -= 1f;
+                    if (firestormLevel < 0) {
                         firestormLevel = 0;
                         lowerFirestorm = false;
                     }
@@ -367,11 +335,6 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                     balls.clear();
                     goingToChangeLevel = false;
                 }
-
-                if ((System.nanoTime() - previousBallSpawn) / 1000000 > 100) {
-                    //balls.add(new Ball());
-                    previousBallSpawn = System.nanoTime();
-                }
             } else {
                 if ((System.nanoTime() - waitStartTime) / 1000000 > (waitingForLevel ? 5000 : 3000)) {
                     isWaiting = false;
@@ -390,36 +353,15 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
         for (Brick b : bricks) b.draw(g);
         for (SmokeEffect b : smokeEffects) b.draw(g);
-        //for (Paddle p : rotors) p.draw(g);
-        paddle.draw(g);
         for (Ball ball : balls) ball.draw(g);
+        paddle.draw(g);
 
-        g.setPaint(new GradientPaint((int) (WIDTH / 2.0), 575, Color.RED, (int) (WIDTH / 2.0), 590, Color.RED.darker().darker()));
-        g.fillRoundRect(0, 575, WIDTH, 10, 20, 20);
-
-        g.setColor(Color.RED);
-//        for (int i = 0; i < 10; i++) {
-//            for (int j = 0; j < 160; j++) {
-//                int x = j * 10;
-//                int y = i * 10 + 450;
-//
-//                int reachX = (int) (paddle.getX() + Math.cos(Math.PI - paddle.getAngle() + Math.PI / 30) * 75);
-//                int reachY = (int) (paddle.getY() + Math.sin(Math.PI - paddle.getAngle() + Math.PI / 30) * 75);
-//
-//                //g.setPaint(new GradientPaint(this.x, this.y, new Color(200,255,200), reachX, reachY, new Color(200,255,200).darker().darker()));
-//
-//                //left side of paddle is reachX and reachY
-//                if ((circleRect(x, y, 3, reachX, reachY, 150, 15, paddle.getAngle()))) {
-//                    //g.fillOval(x - 3, y - 3, 6, 6);
-//                }
-//
-//            }
-//        }
         for (int i = 0; i < health; i++) {
             int x = i * 25 + 15, y = 15, r = 8;
-            g.setPaint(new GradientPaint((int) (x - r), (int) (y - r), Color.WHITE, (int) x, (int) y, new Color(0, 128, 128)));
-            g.fillOval((int) (x - r), (int) (y - r), (int) (r * 2), (int) (r * 2));
+            g.setPaint(new GradientPaint((x - r), (y - r), Color.WHITE, x, y, new Color(0, 128, 128)));
+            g.fillOval((x - r), (y - r), (r * 2), (r * 2));
         }
+
         if (isWaiting) {
             g.setColor(new Color(255, 255, 255, 64));
             g.fillRect(0, 0, WIDTH, HEIGHT);
@@ -430,8 +372,8 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
             g.drawString(count, GamePanel.WIDTH / 2 - length / 2, GamePanel.HEIGHT - 150);
 
         }
-        if (gameOver) {
 
+        if (gameOver) {
             g.setColor(new Color(0, 0, 0, 192));
             g.fillRect(0, 0, WIDTH, HEIGHT);
 
@@ -439,7 +381,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
             String gameOver = "GAME OVER!";
             String score = "YOUR SCORE IS " + playerScore;
-            String ranking = "";
+            String ranking;
 
             if (playerScore < 500) {
                 ranking = "You're currently noob level, stop being a loser and get playing";
@@ -453,7 +395,6 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                 ranking = "You're either a champion or a hacker who's a sore loser";
             }
 
-
             g.setFont(new Font("Bahnschrift", Font.PLAIN, 100));
             int gmoverlen = (int) g.getFontMetrics().getStringBounds(gameOver, g).getWidth();
             g.drawString(gameOver, GamePanel.WIDTH / 2 - gmoverlen / 2, 150);
@@ -465,7 +406,6 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
             g.setFont(new Font("Bahnschrift", Font.PLAIN, 35));
             int ranklen = (int) g.getFontMetrics().getStringBounds(ranking, g).getWidth();
             g.drawString(ranking, GamePanel.WIDTH / 2 - ranklen / 2, 325);
-
         } else {
             g.setColor(Color.WHITE);
             g.setFont(new Font("Bahnschrift", Font.PLAIN, 35));
@@ -473,9 +413,8 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
             int length = (int) g.getFontMetrics().getStringBounds(score, g).getWidth();
             g.drawString(score, 1025 - length / 2, 40);
         }
-        g.setColor(new Color(255,64,0,firestormLevel));
-        g.fillRect(0,0,GamePanel.WIDTH,GamePanel.HEIGHT);
-
+        g.setColor(new Color(255, 64, 0, firestormLevel));
+        g.fillRect(0, 0, GamePanel.WIDTH, GamePanel.HEIGHT);
     }
 
     private void gameDraw() {
@@ -504,17 +443,18 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
             paddle.setAngle(paddle.getAngle() - paddleTurningAngle);
         }
 
-        if(!isWaiting)
-            if(e.getKeyCode() == 'F') {
-                if(firestormLevel < 255) firestormLevel++;
+        if (!isWaiting) {
+            if (e.getKeyCode() == 'F') {
+                if (firestormLevel < 255) firestormLevel++;
             }
+        }
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
         paddleTurningAngle = 0;
-        if(e.getKeyCode() == 'F') {
-            if(firestormLevel < 255) lowerFirestorm = true;
+        if (e.getKeyCode() == 'F') {
+            if (firestormLevel < 255) lowerFirestorm = true;
         }
     }
 }
