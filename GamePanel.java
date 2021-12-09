@@ -34,12 +34,17 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
     public static long previousBallSpawn = 0;
 
-    public static boolean isWaiting = false;
+    public static boolean isWaiting;
     public static boolean gameOver = false;
     public static int playerScore = 0;
 
-    public static long waitStartTime;
+    public static boolean goingToChangeLevel = false;
+    public static boolean waitingForLevel;
+    public static long waitStartTime = System.nanoTime();
     public static long lastCollision = 0;
+    public static int level = 3;
+    public static int firestormLevel = 0;
+    public static boolean lowerFirestorm = false;
 
     public static long gameStartTime = System.nanoTime();
 
@@ -64,7 +69,6 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
     @Override
     public void run() {
-        balls.add(new Ball());
         running = true;
 
         image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
@@ -88,17 +92,6 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         for (int i = 0; i < 6; i++)
             rotors.add(new Paddle(i * 200 + 150, 500));
 
-        //Brick Pattern
-        for (int i = 0; i < 6; i++) {
-            for (int j = 0; j < 13; j++) {
-                if (i % 2 == 0) {
-                    if (j % 2 == 0) bricks.add(new Brick(j * 75+150, i * 42 + 125, 60, 30, 1, new Color(255, 200, 200)));
-                    else bricks.add(new Brick(j * 75+150, i * 42 + 125, 60, 30, 1, new Color(255, 200, 200)));
-                } else {
-                    if (j != 17) bricks.add(new Brick(j * 75 + 37+150, i * 42 + 125, 60, 30, 2, new Color(200, 200, 255)));
-                }
-            }
-        }
 
         //GAME LOOP
         while (running) {
@@ -131,6 +124,91 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
     public static void addScore(double score) {
         playerScore += (int) score;
+    }
+
+    public void addLevelObjects(int level) {
+        if (level + 1 == 1) {
+            for (int i = 0; i < 4; i++) {
+                for (int j = 0; j < 13; j++) {
+                    if (i % 2 == 0) {
+                        if (j % 2 == 0)
+                            bricks.add(new Brick(j * 75 + 150, i * 42 + 125, 80, 40, 1, new Color(255, 200, 200)));
+                    }
+                }
+            }
+        } else if (level + 1 == 2) {
+            for (int i = 0; i < 6; i++) {
+                for (int j = 0; j < 13; j++) {
+                    if (i % 2 == 0) {
+                        if (j % 2 == 0)
+                            bricks.add(new Brick(j * 75 + 150, i * 42 + 125, 60, 30, 2, new Color(200, 200, 255)));
+                        else bricks.add(new Brick(j * 75 + 150, i * 42 + 125, 60, 30, 2, new Color(200, 200, 255)));
+                    } else {
+                        if (j != 12)
+                            bricks.add(new Brick(j * 75 + 37 + 150, i * 42 + 125, 60, 30, 2, new Color(200, 200, 255)));
+                    }
+                }
+            }
+
+        } else if (level + 1 == 3) {
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 7; j++) {
+
+                    bricks.add(new Brick(j * 150 + 150, i * 100 + 55, 20, 20, 4, new Color(255, 255, 200)));
+                    bricks.add(new Brick(j * 150 + 130, i * 100 + 35, 20, 20, 3, new Color(200, 255, 255)));
+                    bricks.add(new Brick(j * 150 + 170, i * 100 + 35, 20, 20, 3, new Color(200, 255, 255)));
+                    bricks.add(new Brick(j * 150 + 130, i * 100 + 75, 20, 20, 3, new Color(200, 255, 255)));
+                    bricks.add(new Brick(j * 150 + 170, i * 100 + 75, 20, 20, 3, new Color(200, 255, 255)));
+                }
+
+            }
+
+
+        } else if(level + 1 == 4) {
+            for(int x = 0; x < 3; x++) {
+                int sx = 300+x*300;
+                int sy = 50;
+                for (int i = -2; i <= 2; i++)
+                    bricks.add(new Brick(sx + 20 * i, sy, 20, 20, 4, new Color(192, 192, 128)));
+                for (int i = -3; i <= 3; i++)
+                    bricks.add(new Brick(sx + 20 * i, sy + 20, 20, 20, 4, new Color(192, 192, 128)));
+                for (int i = -4; i <= 4; i++)
+                    bricks.add(new Brick(sx + 20 * i, sy + 40, 20, 20, 4, new Color(192, 192, 128)));
+                for (int i = -4; i <= 4; i++)
+                    bricks.add(new Brick(sx + 20 * i, sy + 60, 20, 20, 4, new Color(192, 192, 128)));
+
+                for (int i = -4; i <= 4; i++) {
+                    if (i == -3 || i == -2 || i == 2 || i == 3)
+                        bricks.add(new Brick(sx + 20 * i, sy + 80, 20, 20, 6, new Color(64, 64, 64)));
+                    else
+                        bricks.add(new Brick(sx + 20 * i, sy + 80, 20, 20, 4, new Color(192, 192, 128)));
+                }
+                for (int i = -4; i <= 4; i++) {
+                    if (i == -3 || i == -2 || i == 2 || i == 3)
+                        bricks.add(new Brick(sx + 20 * i, sy + 100, 20, 20, 6, new Color(64, 64, 64)));
+                    else
+                        bricks.add(new Brick(sx + 20 * i, sy + 100, 20, 20, 4, new Color(192, 192, 128)));
+                }
+
+                for (int i = -4; i <= 4; i++)
+                    bricks.add(new Brick(sx + 20 * i, sy + 120, 20, 20, 4, new Color(192, 192, 128)));
+                for (int i = -3; i <= 3; i++)
+                    bricks.add(new Brick(sx + 20 * i, sy + 140, 20, 20, 4, new Color(192, 192, 128)));
+                for (int i = -2; i <= 2; i++)
+                    bricks.add(new Brick(sx + 20 * i, sy + 160, 20, 20, 4, new Color(192, 192, 128)));
+                for (int i = -2; i <= 2; i++) {
+                    if (i % 2 == 0) bricks.add(new Brick(sx + 20 * i, sy + 180, 20, 20, 4, new Color(192, 192, 128)));
+                }
+
+                for(int i = 0; i < 30; i++) {
+                    bricks.add(new Brick(40 * i+40, 340, 20, 20, 1, new Color(128, 128, 64)));
+                    bricks.add(new Brick(40 * i+20, 360, 20, 20, 1, new Color(128, 128, 64)));
+                }
+
+            }
+
+        }
+
     }
 
 
@@ -172,11 +250,14 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     private void updateBricks() {
         ArrayList<Brick> deleted = new ArrayList<>();
         for (Brick brick : bricks) {
-            //brick.update()
-            if (brick.lifeOver())
+            brick.update();
+            if (brick.lifeOver()) {
                 deleted.add(brick);
+            }
         }
+        if(deleted.size() > 0) System.out.println(deleted.size());
         bricks.removeAll(deleted);
+
     }
 
     private void updateSmokeEffects() {
@@ -198,10 +279,11 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                 deleted.add(ball);
                 //Spawn a new ball
                 health--;
-                if(health <= 0) {
+                if (health <= 0) {
                     gameOver = true;
                     return;
                 }
+                waitingForLevel = false;
                 isWaiting = true;
                 waitStartTime = System.nanoTime();
 
@@ -216,16 +298,17 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
             int reachY = (int) (paddle.getY() + Math.sin(Math.PI - paddle.getAngle() + Math.PI / 30) * 75);
 
             if ((circleRect(ball.getX(), ball.getY(), 3, reachX, reachY, 150, 15, paddle.getAngle()))) {
+                System.out.println("Ball has touched the paddle");
                 if ((System.nanoTime() - lastCollision) / 1000000 > 300) {
                     lastCollision = System.nanoTime();
-                    System.out.println("A ball has hit the paddle. It was coming at an angle of " + Ball.slopeToAngle(ball.getDx(), ball.getDy()));
+                    //System.out.println("A ball has hit the paddle. It was coming at an angle of " + Ball.slopeToAngle(ball.getDx(), ball.getDy()));
                     ball.reverseY();
 
 
                     double newBallAngle = Ball.slopeToAngle(ball.getDx(), ball.getDy()) + paddle.getAngle() * 2;
                     ball.setX(Ball.angleToSlope(newBallAngle)[0]);
                     ball.setY(Ball.angleToSlope(newBallAngle)[1]);
-                    System.out.println("The ball has bounced off the paddle, which was tilted at an angle of " + paddle.getAngle() + ", at an angle of " + newBallAngle + ".");
+                    //System.out.println("The ball has bounced off the paddle, which was tilted at an angle of " + paddle.getAngle() + ", at an angle of " + newBallAngle + ".");
                 }
             }
 
@@ -236,13 +319,10 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         for (Brick brick : bricks) {
             for (Ball ball : balls) {
                 if (circleRect(ball.getX(), ball.getY(), ball.getR(), brick.getX() - (brick.getWidth() / 2.0), brick.getY() - (brick.getWidth() / 2.0), brick.getWidth(), brick.getHeight(), 0)) {
-                    if (Math.abs(brick.getY() - ball.getY()) < brick.getHeight() / 2.0) {
-                        //Hit the side of the brick
+                    if (Math.abs(brick.getX() - ball.getX()) < brick.getWidth() / 2.0) {
                         ball.reverseY();
+
                     } else {
-                        if(ball.getY() < brick.getY()) {
-                            ball.reverseY();
-                        }
                         ball.reverseX();
                     }
                     brick.crack();
@@ -253,25 +333,51 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     }
 
     private void gameUpdate() {
-        if(!gameOver) {
+        if (!gameOver) {
             for (Paddle p : rotors) p.update();
             paddle.update();
 
             if (!isWaiting) {
+
+                if(lowerFirestorm) {
+                    firestormLevel-= 1f;
+                    if(firestormLevel < 0) {
+                        firestormLevel = 0;
+                        lowerFirestorm = false;
+                    }
+                }
                 ballBrickCollision();
 
                 updateBalls();
                 updateBricks();
                 updateSmokeEffects();
 
+                if (bricks.size() == 0) {
+                    goingToChangeLevel = true;
+                    addLevelObjects(level);
+                }
+                if (goingToChangeLevel) {
+                    health = 5;
+                    isWaiting = true;
+                    waitingForLevel = true;
+                    waitStartTime = System.nanoTime();
+                    gameStartTime = System.nanoTime();
+                    level++;
+                    firestormLevel = 0;
+                    lowerFirestorm = false;
+                    balls.clear();
+                    goingToChangeLevel = false;
+                }
+
                 if ((System.nanoTime() - previousBallSpawn) / 1000000 > 100) {
                     //balls.add(new Ball());
                     previousBallSpawn = System.nanoTime();
                 }
             } else {
-                if ((System.nanoTime() - waitStartTime) / 1000000 > 3000) {
+                if ((System.nanoTime() - waitStartTime) / 1000000 > (waitingForLevel ? 5000 : 3000)) {
                     isWaiting = false;
-                    if(!gameOver) balls.add(new Ball());
+
+                    if (!gameOver) balls.add(new Ball(level == 3));
                 }
             }
         }
@@ -293,23 +399,23 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         g.fillRoundRect(0, 575, WIDTH, 10, 20, 20);
 
         g.setColor(Color.RED);
-        for (int i = 0; i < 10; i++) {
-            for (int j = 0; j < 160; j++) {
-                int x = j * 10;
-                int y = i * 10 + 450;
-
-                int reachX = (int) (paddle.getX() + Math.cos(Math.PI - paddle.getAngle() + Math.PI / 30) * 75);
-                int reachY = (int) (paddle.getY() + Math.sin(Math.PI - paddle.getAngle() + Math.PI / 30) * 75);
-
-                //g.setPaint(new GradientPaint(this.x, this.y, new Color(200,255,200), reachX, reachY, new Color(200,255,200).darker().darker()));
-
-                //left side of paddle is reachX and reachY
-                if ((circleRect(x, y, 3, reachX, reachY, 150, 15, paddle.getAngle()))) {
-                    //g.fillOval(x - 3, y - 3, 6, 6);
-                }
-
-            }
-        }
+//        for (int i = 0; i < 10; i++) {
+//            for (int j = 0; j < 160; j++) {
+//                int x = j * 10;
+//                int y = i * 10 + 450;
+//
+//                int reachX = (int) (paddle.getX() + Math.cos(Math.PI - paddle.getAngle() + Math.PI / 30) * 75);
+//                int reachY = (int) (paddle.getY() + Math.sin(Math.PI - paddle.getAngle() + Math.PI / 30) * 75);
+//
+//                //g.setPaint(new GradientPaint(this.x, this.y, new Color(200,255,200), reachX, reachY, new Color(200,255,200).darker().darker()));
+//
+//                //left side of paddle is reachX and reachY
+//                if ((circleRect(x, y, 3, reachX, reachY, 150, 15, paddle.getAngle()))) {
+//                    //g.fillOval(x - 3, y - 3, 6, 6);
+//                }
+//
+//            }
+//        }
         for (int i = 0; i < health; i++) {
             int x = i * 25 + 15, y = 15, r = 8;
             g.setPaint(new GradientPaint((int) (x - r), (int) (y - r), Color.WHITE, (int) x, (int) y, new Color(0, 128, 128)));
@@ -318,55 +424,58 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         if (isWaiting) {
             g.setColor(new Color(255, 255, 255, 64));
             g.fillRect(0, 0, WIDTH, HEIGHT);
-            String count = String.valueOf(3 - (int) ((System.nanoTime() - waitStartTime) / 1000000000));
+            String count = String.valueOf((waitingForLevel ? 5 : 3) - (int) ((System.nanoTime() - waitStartTime) / 1000000000));
             g.setFont(new Font("Bahnschrift", Font.PLAIN, 500));
 
             int length = (int) g.getFontMetrics().getStringBounds(count, g).getWidth();
             g.drawString(count, GamePanel.WIDTH / 2 - length / 2, GamePanel.HEIGHT - 150);
+
         }
-        if(gameOver) {
+        if (gameOver) {
 
             g.setColor(new Color(0, 0, 0, 192));
             g.fillRect(0, 0, WIDTH, HEIGHT);
 
-            g.setPaint(new GradientPaint(0,GamePanel.HEIGHT/2,new Color(200,255,200),GamePanel.WIDTH,GamePanel.HEIGHT/2,new Color(200,200,255)));
+            g.setPaint(new GradientPaint(0, GamePanel.HEIGHT / 2, new Color(200, 255, 200), GamePanel.WIDTH, GamePanel.HEIGHT / 2, new Color(200, 200, 255)));
 
             String gameOver = "GAME OVER!";
             String score = "YOUR SCORE IS " + playerScore;
             String ranking = "";
 
-            if(playerScore < 500) {
+            if (playerScore < 500) {
                 ranking = "You're currently noob level, stop being a loser and get playing";
-            }else if(playerScore < 2000) {
+            } else if (playerScore < 2000) {
                 ranking = "You're an average player, keep playing to achieve more";
-            }else if(playerScore < 3000) {
+            } else if (playerScore < 3000) {
                 ranking = "You're a pretty good player, play some more and you'll reach the top";
-            }else if(playerScore < 4500) {
+            } else if (playerScore < 4500) {
                 ranking = "You're an amazing player, a few more acquired skills and you'll be the best";
-            }else {
+            } else {
                 ranking = "You're either a champion or a hacker who's a sore loser";
             }
 
 
             g.setFont(new Font("Bahnschrift", Font.PLAIN, 100));
             int gmoverlen = (int) g.getFontMetrics().getStringBounds(gameOver, g).getWidth();
-            g.drawString(gameOver, GamePanel.WIDTH/2 - gmoverlen / 2, 150);
+            g.drawString(gameOver, GamePanel.WIDTH / 2 - gmoverlen / 2, 150);
 
             g.setFont(new Font("Bahnschrift", Font.PLAIN, 75));
-            int scorelen= (int) g.getFontMetrics().getStringBounds(score, g).getWidth();
-            g.drawString(score, GamePanel.WIDTH/2 - scorelen / 2, 250);
+            int scorelen = (int) g.getFontMetrics().getStringBounds(score, g).getWidth();
+            g.drawString(score, GamePanel.WIDTH / 2 - scorelen / 2, 250);
 
             g.setFont(new Font("Bahnschrift", Font.PLAIN, 35));
             int ranklen = (int) g.getFontMetrics().getStringBounds(ranking, g).getWidth();
-            g.drawString(ranking, GamePanel.WIDTH/2 - ranklen / 2, 325);
+            g.drawString(ranking, GamePanel.WIDTH / 2 - ranklen / 2, 325);
 
-        }else {
+        } else {
             g.setColor(Color.WHITE);
             g.setFont(new Font("Bahnschrift", Font.PLAIN, 35));
             String score = "YOUR SCORE IS " + playerScore;
             int length = (int) g.getFontMetrics().getStringBounds(score, g).getWidth();
             g.drawString(score, 1025 - length / 2, 40);
         }
+        g.setColor(new Color(255,64,0,firestormLevel));
+        g.fillRect(0,0,GamePanel.WIDTH,GamePanel.HEIGHT);
 
     }
 
@@ -395,10 +504,18 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
             paddle.setAngle(paddle.getAngle() - paddleTurningAngle);
         }
+
+        if(!isWaiting)
+            if(e.getKeyCode() == 'F') {
+                if(firestormLevel < 255) firestormLevel++;
+            }
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
         paddleTurningAngle = 0;
+        if(e.getKeyCode() == 'F') {
+            if(firestormLevel < 255) lowerFirestorm = true;
+        }
     }
 }

@@ -40,12 +40,15 @@ public class Brick implements Entity {
         return height;
     }
 
+    public int getHealth() {return health;}
+
     public void crack() {
         this.health--;
         if (this.health <= 0) {
             isDead = true;
             GamePanel.addScore(this.maxHealth*1000.0/((System.nanoTime()-GamePanel.gameStartTime)/1000000000.0+3));
         }
+
     }
 
     @Override
@@ -55,6 +58,10 @@ public class Brick implements Entity {
 
     @Override
     public void update() {
+        if(GamePanel.firestormLevel > 240) {
+            isDead = true;
+            GamePanel.addScore(this.maxHealth*1000.0/((System.nanoTime()-GamePanel.gameStartTime)/1000000000.0+3));
+        }
 
     }
 

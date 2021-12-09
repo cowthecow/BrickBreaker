@@ -17,8 +17,8 @@ public class Ball implements Entity {
     private boolean isFireball = false;
     private boolean lifeover = false;
 
-    public Ball() {
-        this.x = GamePanel.WIDTH / 2.0;
+    public Ball(boolean isFireball) {
+        this.x = 11;
         this.y = 475;
         this.r = 10;
         this.speed = 5;
@@ -29,7 +29,7 @@ public class Ball implements Entity {
 
 
 
-        //turnToFireball();
+        if(isFireball) turnToFireball();
     }
 
     public void turnToFireball() {
