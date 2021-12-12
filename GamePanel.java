@@ -1,11 +1,16 @@
 package com.laserinfinite.java;
 
+import com.laserinfinite.java.powerball.Fireball;
+import com.laserinfinite.java.powerball.Iceball;
+import com.laserinfinite.java.powerball.Powerball;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 
 public class GamePanel extends JPanel implements Runnable, KeyListener {
 
@@ -28,6 +33,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     public static ArrayList<Paddle> rotors = new ArrayList<>();
 
     public static ArrayList<Ball> balls = new ArrayList<>();
+    public static ArrayList<Powerball> powerballs = new ArrayList<>();
 
     public static boolean isWaiting;
     public static boolean gameOver = false;
@@ -232,7 +238,6 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                 deleted.add(brick);
             }
         }
-        if (deleted.size() > 0) System.out.println(deleted.size());
         bricks.removeAll(deleted);
 
     }
@@ -264,6 +269,21 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
             }
         }
         balls.removeAll(deleted);
+    }
+
+    //ice ball freezes everything that touches it
+    //fire ball deals damage to itself and the bricks and at the end it explodes
+    //light ball explodes into 30 small lightballs
+
+    private void updatePowerballs() {
+        ArrayList<Powerball> deleted = new ArrayList<>();
+        for (Powerball ball : powerballs) {
+            ball.update();
+            if (ball.lifeOver()) {
+                deleted.add(ball);
+            }
+        }
+        powerballs.removeAll(deleted);
     }
 
     public static void ballPaddleCollision() {
@@ -300,6 +320,25 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         }
     }
 
+    private void powerballBrickCollision() {
+        for (Brick brick : bricks) {
+            for (Powerball ball : powerballs) {
+                int radiusOfEffect = ball.getR()+15;
+
+                if (circleRect(ball.getX(), ball.getY(), radiusOfEffect, brick.getX() - (brick.getWidth() / 2.0), brick.getY() - (brick.getWidth() / 2.0), brick.getWidth(), brick.getHeight(), 0)) {
+                    if(ball.getType().equals("ice")) {
+                        brick.freeze();
+                    }else if(ball.getType().equals("fire")) {
+                        ball.setHealth(ball.getHealth()-brick.getHealth());
+                        brick.disintegrate();
+                    }else if(ball.getType().equals("light")) {
+
+                    }
+                }
+            }
+        }
+    }
+
     private void gameUpdate() {
         if (!gameOver) {
             for (Paddle p : rotors) p.update();
@@ -314,7 +353,9 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                     }
                 }
                 ballBrickCollision();
+                powerballBrickCollision();
 
+                updatePowerballs();
                 updateBalls();
                 updateBricks();
                 updateSmokeEffects();
@@ -354,6 +395,9 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         for (Brick b : bricks) b.draw(g);
         for (SmokeEffect b : smokeEffects) b.draw(g);
         for (Ball ball : balls) ball.draw(g);
+        try {
+            for (Powerball powerball : powerballs) powerball.draw(g);
+        }catch (ConcurrentModificationException ignore) {}
         paddle.draw(g);
 
         for (int i = 0; i < health; i++) {
@@ -455,6 +499,9 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         paddleTurningAngle = 0;
         if (e.getKeyCode() == 'F') {
             if (firestormLevel < 255) lowerFirestorm = true;
+        }
+        if(!isWaiting && e.getKeyCode() == KeyEvent.VK_SPACE) {
+            powerballs.add(new Fireball(paddle.getX(),paddle.getY(),paddle.getAngle()));
         }
     }
 }

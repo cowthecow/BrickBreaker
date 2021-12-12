@@ -13,6 +13,7 @@ public class Brick implements Entity {
 
     private final int maxHealth;
     private boolean isDead = false;
+    private boolean isFrozen = false;
 
     public Brick(int x, int y, int width, int height, int health, Color color) {
         this.x = x;
@@ -22,6 +23,7 @@ public class Brick implements Entity {
         this.health = health;
         this.maxHealth = health;
         this.color = color;
+        //freeze();
     }
 
     public int getX() {
@@ -40,12 +42,25 @@ public class Brick implements Entity {
         return height;
     }
 
+    public int getHealth() {return health;}
+
+    public void disintegrate() {
+        this.health = 0;
+        isDead = true;
+        GamePanel.addScore(this.maxHealth*1000.0/((System.nanoTime()-GamePanel.gameStartTime)/1000000000.0+3));
+    }
+
     public void crack() {
         this.health--;
         if (this.health <= 0) {
             isDead = true;
             GamePanel.addScore(this.maxHealth*1000.0/((System.nanoTime()-GamePanel.gameStartTime)/1000000000.0+3));
         }
+    }
+
+    public void freeze() {
+        this.health = 1;
+        this.isFrozen = true;
     }
 
     @Override
@@ -69,7 +84,14 @@ public class Brick implements Entity {
         g.setPaint(null);
         g.setColor(new Color(0, 0, 0, 64));
 
-        for (int i = 0; i < this.maxHealth - this.health; i++) {
+        if(!isFrozen) {
+            for (int i = 0; i < this.maxHealth - this.health; i++) {
+                g.fillRoundRect(x - width / 2, y - height / 2, width, height, this.width / 10, this.height / 10);
+            }
+        }
+
+        if(isFrozen) {
+            g.setColor(new Color(200, 255, 255, 164));
             g.fillRoundRect(x - width / 2, y - height / 2, width, height, this.width / 10, this.height / 10);
         }
     }
