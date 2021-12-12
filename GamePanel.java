@@ -2,6 +2,7 @@ package com.laserinfinite.java;
 
 import com.laserinfinite.java.powerball.Fireball;
 import com.laserinfinite.java.powerball.Iceball;
+import com.laserinfinite.java.powerball.LightningBall;
 import com.laserinfinite.java.powerball.Powerball;
 
 import javax.swing.*;
@@ -43,11 +44,13 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     public static boolean waitingForLevel;
     public static long waitStartTime = System.nanoTime();
     public static long lastCollision = 0;
-    public static int level = 3;
+    public static int level = 0;
     public static int firestormLevel = 0;
     public static boolean lowerFirestorm = false;
 
     public static long gameStartTime = System.nanoTime();
+
+    public static int typeFired = 0;
 
     //CONSTRUCTOR
     public GamePanel() {
@@ -104,7 +107,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
             waitTime = targetTime - URDTimeMillis;
 
-            if(waitTime > 0) {
+            if (waitTime > 0) {
                 try {
                     Thread.sleep(waitTime);
                 } catch (Exception e) {
@@ -136,11 +139,9 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
             }
         } else if (level + 1 == 2) {
             for (int i = 0; i < 6; i++) {
-                for (int j = 0; j < 13; j++) {
+                for (int j = 0; j < 14; j+= 2) {
                     if (i % 2 == 0) {
-                        if (j % 2 == 0)
-                            bricks.add(new Brick(j * 75 + 150, i * 42 + 125, 60, 30, 2, new Color(200, 200, 255)));
-                        else bricks.add(new Brick(j * 75 + 150, i * 42 + 125, 60, 30, 2, new Color(200, 200, 255)));
+                        bricks.add(new Brick(j * 75 + 150, i * 42 + 125, 60, 30, 2, new Color(200, 200, 255)));
                     } else {
                         if (j != 12)
                             bricks.add(new Brick(j * 75 + 37 + 150, i * 42 + 125, 60, 30, 2, new Color(200, 200, 255)));
@@ -257,15 +258,20 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         for (Ball ball : balls) {
             ball.update();
             if (ball.lifeOver()) {
-                deleted.add(ball);
-                health--;
-                if (health <= 0) {
-                    gameOver = true;
-                    return;
+                if(ball.isOneUse()) {
+                    deleted.add(ball);
+                }else {
+                    deleted.add(ball);
+                    health--;
+                    if (health <= 0) {
+                        gameOver = true;
+                        return;
+                    }
+                    waitingForLevel = false;
+                    isWaiting = true;
+                    powerballs.clear();
+                    waitStartTime = System.nanoTime();
                 }
-                waitingForLevel = false;
-                isWaiting = true;
-                waitStartTime = System.nanoTime();
             }
         }
         balls.removeAll(deleted);
@@ -323,16 +329,23 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     private void powerballBrickCollision() {
         for (Brick brick : bricks) {
             for (Powerball ball : powerballs) {
-                int radiusOfEffect = ball.getR()+15;
+                int radiusOfEffect = ball.getR() + 15;
 
                 if (circleRect(ball.getX(), ball.getY(), radiusOfEffect, brick.getX() - (brick.getWidth() / 2.0), brick.getY() - (brick.getWidth() / 2.0), brick.getWidth(), brick.getHeight(), 0)) {
-                    if(ball.getType().equals("ice")) {
+                    if (ball.getType().equals("ice")) {
                         brick.freeze();
-                    }else if(ball.getType().equals("fire")) {
-                        ball.setHealth(ball.getHealth()-brick.getHealth());
+                    } else if (ball.getType().equals("fire")) {
+                        ball.setHealth(ball.getHealth() - brick.getHealth());
                         brick.disintegrate();
-                    }else if(ball.getType().equals("light")) {
-
+                    } else if (ball.getType().equals("light")) {
+                        if (ball.getHealth() == 2) {
+                            for(int i = 0; i < 30; i++) {
+                                if(i != 0 && i != 15) balls.add(new Ball(ball.getX(),ball.getY(),Math.toRadians(i*12)));
+                            }
+                        } else if (ball.getHealth() == 1) {
+                            brick.crack();
+                        }
+                        ball.setHealth(ball.getHealth() - 1);
                     }
                 }
             }
@@ -375,6 +388,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                     lowerFirestorm = false;
                     balls.clear();
                     goingToChangeLevel = false;
+                    powerballs.clear();
                 }
             } else {
                 if ((System.nanoTime() - waitStartTime) / 1000000 > (waitingForLevel ? 5000 : 3000)) {
@@ -397,7 +411,8 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         for (Ball ball : balls) ball.draw(g);
         try {
             for (Powerball powerball : powerballs) powerball.draw(g);
-        }catch (ConcurrentModificationException ignore) {}
+        } catch (ConcurrentModificationException ignore) {
+        }
         paddle.draw(g);
 
         for (int i = 0; i < health; i++) {
@@ -427,13 +442,13 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
             String score = "YOUR SCORE IS " + playerScore;
             String ranking;
 
-            if (playerScore < 500) {
+            if (playerScore < 1000) {
                 ranking = "You're currently noob level, stop being a loser and get playing";
-            } else if (playerScore < 2000) {
+            } else if (playerScore < 2500) {
                 ranking = "You're an average player, keep playing to achieve more";
-            } else if (playerScore < 3000) {
-                ranking = "You're a pretty good player, play some more and you'll reach the top";
             } else if (playerScore < 4500) {
+                ranking = "You're a pretty good player, play some more and you'll reach the top";
+            } else if (playerScore < 8500) {
                 ranking = "You're an amazing player, a few more acquired skills and you'll be the best";
             } else {
                 ranking = "You're either a champion or a hacker who's a sore loser";
@@ -500,8 +515,16 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         if (e.getKeyCode() == 'F') {
             if (firestormLevel < 255) lowerFirestorm = true;
         }
-        if(!isWaiting && e.getKeyCode() == KeyEvent.VK_SPACE) {
-            powerballs.add(new Fireball(paddle.getX(),paddle.getY(),paddle.getAngle()));
+        if (!isWaiting && e.getKeyCode() == KeyEvent.VK_SPACE) {
+            if(typeFired == 0) {
+                powerballs.add(new Iceball(paddle.getX(), paddle.getY(), paddle.getAngle()));
+            }else if(typeFired == 1) {
+                powerballs.add(new Fireball(paddle.getX(), paddle.getY(), paddle.getAngle()));
+            }else if(typeFired == 2) {
+                powerballs.add(new LightningBall(paddle.getX(), paddle.getY(), paddle.getAngle()));
+            }
+            typeFired++;
+            typeFired %= 3;
         }
     }
 }

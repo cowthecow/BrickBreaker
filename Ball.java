@@ -16,6 +16,7 @@ public class Ball implements Entity {
     private double lastSmokeRelease = System.nanoTime();
     private boolean isFireball = false;
     private boolean lifeOver = false;
+    private boolean oneUseBall;
 
     public Ball(boolean isFireball) {
         this.x = 11;
@@ -24,11 +25,22 @@ public class Ball implements Entity {
         this.speed = 5;
         this.directionFacing = Math.PI;
 
+        this.oneUseBall = false;
         this.dx = Math.cos((directionFacing)) * speed;
         this.dy = Math.sin((directionFacing)) * speed;
 
-
         if (isFireball) turnToFireball();
+    }
+
+    public Ball(double x, double y, double angle) {
+        this.oneUseBall = true;
+        this.x = x;
+        this.y = y;
+        this.r = 10;
+        this.speed = 6;
+        this.directionFacing = angle;
+        this.dx = Math.cos((directionFacing)) * speed;
+        this.dy = Math.sin((directionFacing)) * speed;
     }
 
     public void turnToFireball() {
@@ -73,6 +85,8 @@ public class Ball implements Entity {
     public double getDy() {
         return dy;
     }
+
+    public boolean isOneUse() {return oneUseBall;}
 
     public static double slopeToAngle(double dx, double dy) {
         double angle = (Math.atan2(dy, dx));
@@ -122,6 +136,10 @@ public class Ball implements Entity {
             g.setPaint(new GradientPaint((int) (this.x - this.r), (int) (this.y - this.r), Color.WHITE, (int) this.x, (int) this.y, new Color(255, 64, 0)));
         } else {
             g.setPaint(new GradientPaint((int) (this.x - this.r), (int) (this.y - this.r), Color.WHITE, (int) this.x, (int) this.y, new Color(0, 128, 128)));
+        }
+
+        if(oneUseBall) {
+            g.setPaint(new GradientPaint((int) (this.x - this.r), (int) (this.y - this.r), Color.BLACK, (int) this.x, (int) this.y, new Color(255, 255, 128)));
         }
         g.fillOval((int) (this.x - this.r), (int) (this.y - this.r), (int) (this.r * 2), (int) (this.r * 2));
     }

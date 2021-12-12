@@ -62,39 +62,38 @@ public class Fireball extends Powerball {
 
     @Override
     public void update() {
-        this.x += Math.cos(directionFacing+Math.PI/2) * 3;
-        this.y -= Math.sin(directionFacing+Math.PI/2) * 3;
+        this.x += Math.cos(directionFacing + Math.PI / 2) * 3;
+        this.y -= Math.sin(directionFacing + Math.PI / 2) * 3;
 
-        if(this.x - r > GamePanel.WIDTH) {
+        if (this.x - r > GamePanel.WIDTH) {
             lifeOver = true;
         }
-        if(this.x + r < 0) {
+        if (this.x + r < 0) {
             lifeOver = true;
         }
-        if(this.y + r < 0) {
+        if (this.y + r < 0) {
             lifeOver = true;
         }
-        if(this.y-r > GamePanel.HEIGHT) {
+        if (this.y - r > GamePanel.HEIGHT) {
             lifeOver = true;
         }
-        if(this.health <= 0) {
+        if (this.health <= 0) {
             lifeOver = true;
         }
-        double percentageOfHealth = (this.health/100.0);
-        System.out.println(percentageOfHealth);
+        double percentageOfHealth = (this.health / 100.0);
         if ((System.nanoTime() - previousRelease) / 1000000 > 1) {
-            GamePanel.smokeEffects.add(new SmokeEffect((int) this.x, (int) this.y, (int) (((Math.random() * 10) + 10)*percentageOfHealth), 1, 0.3, new Color(32, 32, 32)));
+            GamePanel.smokeEffects.add(new SmokeEffect((int) this.x, (int) this.y, (int) (((Math.random() * 10) + 10) * percentageOfHealth), 1, 0.3, new Color(32, 32, 32)));
             previousRelease = System.nanoTime();
         }
     }
 
     @Override
     public void draw(Graphics2D g) {
-        if(health > 0) {
+        if (health > 0) {
             double percentageOfHealth = (this.health / 100.0);
             int newR = (int) (this.r * percentageOfHealth);
-            g.setPaint(new GradientPaint((int) (this.x - newR), (int) (this.y - newR), Color.WHITE, (int) this.x, (int) this.y, new Color(255, 64, 0)));
-            g.fillOval((int) (this.x - newR), (int) (this.y - newR), (int) (newR * 2), (int) (newR * 2));
+            g.setPaint(new GradientPaint((this.x - newR), (this.y - newR), Color.WHITE, this.x, this.y, new Color(255, 64, 0)));
+            g.fillOval((this.x - newR), (this.y - newR), (newR * 2), (newR * 2));
         }
     }
 }
